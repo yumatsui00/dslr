@@ -2,18 +2,23 @@ import sys
 import os
 import pandas as pd
 
-def ft_sum(values):
+def _sum(values):
     total = 0
     for value in values:
         total += value
     return total
 
-def ft_mean(values):
-    if not values:
-        return None
-    total_sum = ft_sum(values)
+def _mean(values):
+    total_sum = _sum(values)
     mean_value = total_sum / len(values)
     return mean_value
+
+def _std(values):
+    if len(values) == 0:
+            return None
+    mean = _mean(values)
+    variance = sum((x - mean) ** 2 for x in values) / len(values)
+    return variance ** 0.5
 
 def ft_sort(values):
     n = len(values)
@@ -45,23 +50,6 @@ def ft_sort_corrs(corrs):
                 items[j], items[j + 1] = items[j + 1], items[j]
     return items
 
-def Error_exit(message):
-    print(f"ERROR: {message}")
-    print("Usage: python describe.py <data_path>")
-    sys.exit(1)
-
-def Check_args():
-    # 引数の確認
-	if len(sys.argv) < 2:
-		Error_exit("Too Few Args")
-	elif len(sys.argv) > 2:
-		Error_exit("Too Many Args")
-
-def Check_path(path):
-	if not os.path.exists(path):
-		Error_exit(f"{path} doesn't exist")
-	elif not os.access(path, os.R_OK):
-		Error_exit("Permission denied")
 
 def ft_corr(x, y):
 	if len(x) != len(y):

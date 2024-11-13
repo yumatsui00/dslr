@@ -1,25 +1,24 @@
 import pandas as pd
 import sys
-import utils as ut
+from utils import math as ft
+from utils import parser
+from utils import utils as ut
 
-
-
-def calc_stats(series):
+def describe_data(series):
     count = 0
     total = 0
-    min = float('inf')
-    max = float('-inf')
+    minimum = float('inf')
+    maximum = float('-inf')
     values = []
     for value in series:
         if pd.notna(value):
             count += 1
             total += value
             values.append(value)
-            if value < min:
-                min = value
-            if value > max:
-                max = value
-    #mean
+            if value < minimum:
+                minimum = value
+            if value > maximum:
+                maximum = value
     mean = total / count if count > 0 else float('nan')
     #std
     sig = 0
@@ -35,28 +34,30 @@ def calc_stats(series):
         'Count': count,
         'Mean': mean,
         'Std': std,
-        'Min': min,
+        'Min': minimum,
         '25%': q1,
         '50%': q2,
         '75%': q3,
-        'Max': max
-	}
+        'Max': maximum
+    }
 
 
-ut.Check_args
-# データパスを取得
-path = sys.argv[1]
+def _describe(data):
+    num_data = data.select_dtypes(include="number")
+    stats = {col: describe_data(num_data[col]) for col in num_data.columns}
+    # 省略を避ける設定
+    pd.set_option('display.max_rows', None)     # 行の省略をなくす
+    pd.set_option('display.max_columns', None)  # 列の省略をなくす
+    pd.set_option('display.expand_frame_repr', False)  # 横長の出力を省略せずに表示
 
-ut.Check_path(path)
+    print(pd.DataFrame(stats))
 
-data = pd.read_csv(path)
-num_data = data.select_dtypes(include="number") #これ使っていいの？？計算はしてないけど数値だけ抜き出し
 
-stats = {column: calc_stats(num_data[column]) for column in num_data.columns}
 
-# 省略を避ける設定
-pd.set_option('display.max_rows', None)     # 行の省略をなくす
-pd.set_option('display.max_columns', None)  # 列の省略をなくす
-pd.set_option('display.expand_frame_repr', False)  # 横長の出力を省略せずに表示
 
-print(pd.DataFrame(stats))
+
+if __name__ == "__main__":
+    parser.check_arg_num(2)
+    path = parser.check_path_ok(sys.argv[1])
+    data = pd.read_csv(path)
+    _describe(data)
