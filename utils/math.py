@@ -1,6 +1,10 @@
-import sys
-import os
 import pandas as pd
+
+def _len(values):
+    count = 0
+    for _ in values:
+        count += 1
+    return count
 
 def _sum(values):
     total = 0
@@ -9,54 +13,64 @@ def _sum(values):
     return total
 
 def _mean(values):
-    total_sum = _sum(values)
-    mean_value = total_sum / len(values)
-    return mean_value
+    return (_sum(values) / _len(values)) if _len(values) > 0 else float('nan')
 
 def _std(values):
-    if len(values) == 0:
-            return None
-    mean = _mean(values)
-    variance = sum((x - mean) ** 2 for x in values) / len(values)
-    return variance ** 0.5
+    l = _len(values)
+    if l < 0:
+        return None
+    vairance = _sum((x - _mean(values)) ** 2 for x in values) / l
+    return vairance ** 0.5
 
-def ft_sort(values):
-    n = len(values)
-    for i in range(n):
-        for j in range(0, n-i-1):
-            if values[j] > values[j + 1]:
-                # 隣り合う要素を入れ替え
-                values[j], values[j + 1] = values[j + 1], values[j]
-    return values
 
-def ft_sort_values(series):
-	items = list(series.items())
-	n = len(items)
-	for i in range(n):
-		for j in range(0, n - i - 1):
-			if items[j][1] > items[j + 1][1]:
-				items[j], items[j + 1] = items[j + 1], items[j]
-	sorted_series = pd.Series({k: v for k, v in items})
-	return sorted_series
+def _sort(values, order="as", type="list", sort_index=-1):
+    if not (order == "as" or order == "des"):
+        raise AssertionError("Invalid Order ooption. Order has to be as or des")
+    if type == "list":
+        items = values
+    elif type == "series" or type == "dict":
+        items = list(values.items())
+        if sort_index == -1:
+            sort_index = 1
+    else:
+        raise AssertionError("Invalid type option. Type can be list, series, or dict")
+    n = _len(items)
 
-def ft_sort_corrs(corrs):
-    items = list(corrs.items())
-    n = len(items)
+    if sort_index < 0:
+        if order == "as":
+            for i in range(n):
+                for j in range(0, n - i - 1):
+                    if items[j] > items[j + 1]:
+                        items[j], items[j + 1] = items[j + 1], items[j]
+        elif order == "des":
+            for i in range(n):
+                for j in range(0, n - i - 1):
+                    if items[j] < items[j + 1]:
+                        items[j], items[j + 1] = items[j + 1], items[j]
+    else:
+        if order == "as":
+            for i in range(n):
+                for j in range(0, n - i - 1):
+                    if items[j][sort_index] > items[j + 1][sort_index]:
+                        items[j], items[j + 1] = items[j + 1], items[j]
+        elif order == "des":
+            for i in range(n):
+                for j in range(0, n - i - 1):
+                    if items[j][sort_index] < items[j + 1][sort_index]:
+                        items[j], items[j + 1] = items[j + 1], items[j]
 
-    for i in range(n):
-        for j in range(0, n - i - 1):
-            # 降順に並べ替え（大きいものが先）
-            if items[j][1] < items[j + 1][1]:
-                items[j], items[j + 1] = items[j + 1], items[j]
+    if type == "series":
+        return pd.Series({k: v for k, v in items})
+    elif type == "dict":
+        return dict(items)
     return items
 
-
-def ft_corr(x, y):
-	if len(x) != len(y):
-		Error_exit("Error occured when calculating corr")
-	x_mean = ft_sum(x) / len(x)
-	y_mean = ft_sum(y) / len(y)
-	up = ft_sum((x[i] - x_mean) * (y[i] - y_mean) for i in range(len(x)))
-	bl = ft_sum((x[i] - x_mean) ** 2 for i in range(len(x))) ** 0.5
-	br = ft_sum((y[i] - y_mean) ** 2 for i in range(len(x))) ** 0.5
-	return up / (bl * br)
+def _corr(x, y):
+    if _len(x) != _len(y):
+        raise ValueError("The length of x and y have to be same")
+    x_mean = _mean(x)
+    y_mean = _mean(y)
+    up = _sum((x[i] - x_mean) * (y[i] - y_mean) for i in range(_len(x)))
+    bl = _sum((x[i] - x_mean) ** 2 for i in range(_len(x))) ** 0.5
+    br = _sum((y[i] - y_mean) ** 2 for i in range(_len(y))) ** 0.5
+    return up / (bl * br)

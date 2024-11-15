@@ -1,16 +1,23 @@
-from utils import error as er
 import sys
 import os
 
-def check_arg_num(adjust: int):
-	if len(sys.argv) < adjust:
-		er.Error_exit("Too Few Args")
-	elif len(sys.argv) > adjust:
-		er.Error_exit("Too Many Args")
 
-def check_path_ok(path: str):
+
+def Error_exit(comment):
+    print(f"ERROR: {comment}")
+    sys.exit(1)
+
+
+def check_arg_num(length: int):
+    if len(sys.argv) < length:
+        Error_exit("Too Few Args")
+    elif len(sys.argv) > length:
+        Error_exit("Too many Args")
+
+
+def check_path(path: str):
     if not os.path.exists(path):
-        er.Error_exit(f"{path} doesn't exist")
+        Error_exit(f"{path} doesn't exist")
     elif not os.access(path, os.R_OK):
-        er.Error_exit("Permission denied")
+        Error_exit("Permission Denied")
     return path
